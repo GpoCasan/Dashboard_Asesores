@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SERVICEL - Grupo Casan</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- ==================== PANTALLA DE LOGIN ==================== -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-modal">
+            <div class="login-header">
+                <h2>🔐 SERVICEL</h2>
+                <p>Dashboard de Reportes</p>
+            </div>
+            <div class="login-body">
+                <div id="loginError" class="login-error"></div>
+                <div class="login-form-group">
+                    <label>📧 Correo Electrónico</label>
+                    <input type="email" id="loginEmail" placeholder="ejemplo@correo.com">
+                </div>
+                <div class="login-form-group">
+                    <label>🔒 Contraseña</label>
+                    <input type="password" id="loginPassword" placeholder="Ingresa tu contraseña">
+                </div>
+                <button class="login-btn" id="loginBtn">Ingresar</button>
+                <div id="loginLoading" style="display: none; text-align: center; margin-top: 12px;">
+                    <span class="spinner"></span> Autenticando...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== DASHBOARD ==================== -->
+    <div id="dashboard" class="dashboard-container" style="display: none;">
+        <!-- Menú lateral -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="img/logo.png" alt="Logo" class="sidebar-logo-img" onerror="this.style.display='none'">
+                    <span class="sidebar-brand">SERVICEL</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-nav">
+                <div class="sidebar-item active" data-module="dashboard">
+                    <span class="sidebar-icon">🏠</span>
+                    <span class="sidebar-label">Inicio</span>
+                </div>
+                <div class="sidebar-item" data-module="contado">
+                    <span class="sidebar-icon">📊</span>
+                    <span class="sidebar-label">Contado</span>
+                </div>
+                <div class="sidebar-item" data-module="credito">
+                    <span class="sidebar-icon">🏦</span>
+                    <span class="sidebar-label">Crédito</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button class="sidebar-logout" id="logoutBtn">🚪 Cerrar Sesión</button>
+            </div>
+        </nav>
+
+        <!-- Contenido principal -->
+        <main class="main-content">
+            <!-- Barra superior con info del usuario -->
+            <header class="top-bar">
+                <div class="user-info-header">
+                    <div class="user-avatar-large" id="userAvatar">👤</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userNameDisplay">Cargando...</div>
+                        <div class="user-location">
+                            <span class="location-item" id="userBranch">🏪 Cargando tienda...</span>
+                            <span class="location-item" id="userWarehouse">🏭 Cargando almacén...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <!-- Botón Transferencias -->
+                    <button class="btn-header" id="btnTransferencias" title="Transferencias Pendientes">
+                        📦
+                        <span id="badgeTransferencias" class="badge-header">0</span>
+                    </button>
+                    <!-- Botón Cancelaciones -->
+                    <button class="btn-header" id="btnCancelaciones" title="Solicitudes de Cancelación">
+                        🗑️
+                        <span id="badgeCancelaciones" class="badge-header">0</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- ==================== MÓDULO: DASHBOARD ==================== -->
+            <div id="dashboardModule" class="module active-module">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🏠 Inicio</h2>
+                    </div>
+                    <div class="card-body">
+                        <div style="text-align: center; padding: 60px 20px;">
+                            <div style="font-size: 4rem; margin-bottom: 20px;">📊</div>
+                            <h3 style="color: #1e293b; margin-bottom: 8px;">¡Bienvenido a SERVICEL - Grupo Casan!</h3>
+                            <p style="color: #64748b; font-size: 1.1rem;">
+                                Selecciona un módulo en el menú lateral para comenzar
+                            </p>
+                            <div style="display: flex; justify-content: center; gap: 16px; margin-top: 24px; flex-wrap: wrap;">
+                                <div style="background: #f8fafc; padding: 16px 24px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
+                                    <div style="font-size: 2rem;">📊</div>
+                                    <div style="font-weight: 600; color: #1e293b;">Contado</div>
+                                    <div style="font-size: 0.8rem; color: #64748b;">Ventas de contado</div>
+                                </div>
+                                <div style="background: #f8fafc; padding: 16px 24px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
+                                    <div style="font-size: 2rem;">🏦</div>
+                                    <div style="font-weight: 600; color: #1e293b;">Crédito</div>
+                                    <div style="font-size: 0.8rem; color: #64748b;">Ventas a crédito</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== MÓDULO: CONTADO ==================== -->
+            <div id="contadoModule" class="module">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📊 Ventas de Contado</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Selector de fecha -->
+                        <div style="background: #f8fafc; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                            <div>
+                                <label style="font-weight: 600; color: #1e3a8a; font-size: 0.85rem; display: block; margin-bottom: 4px;">📅 Fecha de inicio del período (14 días)</label>
+                                <input type="date" id="contadoDatePicker" style="padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;">
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: flex-end;">
+                                <button id="contadoApplyBtn" style="padding: 10px 24px; width: auto; font-size: 0.9rem; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);">📊 Consultar</button>
+                            </div>
+                            <div style="margin-left: auto; font-size: 0.85rem; color: #64748b;">
+                                <span id="contadoPeriodInfo">📅 Selecciona una fecha y presiona "Consultar"</span>
+                            </div>
+                        </div>
+
+                        <!-- CONTENEDOR DE RESULTADOS (oculto inicialmente) -->
+                        <div id="contadoResultsContainer" style="display: none;">
+                            <!-- Tarjetas de estadísticas -->
+                            <div class="stats-grid" id="contadoStatsGrid">
+                                <div class="stat-card" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);">
+                                    <div class="stat-number" id="contadoStatVentas">0</div>
+                                    <div class="stat-label">💰 Total Ventas</div>
+                                </div>
+                                <div class="stat-card" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+                                    <div class="stat-number" id="contadoStatPromedio">$0</div>
+                                    <div class="stat-label">📊 Promedio Diario</div>
+                                </div>
+                                <div class="stat-card" style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);">
+                                    <div class="stat-number" id="contadoStatDias">0</div>
+                                    <div class="stat-label">📅 Días con ventas</div>
+                                </div>
+                                <div class="stat-card" style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);">
+                                    <div class="stat-number" id="contadoStatDiasTotales">0</div>
+                                    <div class="stat-label">📆 Días completos</div>
+                                </div>
+                            </div>
+
+                            <!-- Gráfica 1: Línea -->
+                            <div style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; margin: 20px 0;">
+                                <h4 style="color: #1e40af; margin-bottom: 16px;">📈 Evolución de Ventas de Contado</h4>
+                                <div style="position: relative; height: 300px;">
+                                    <canvas id="contadoSalesChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Tarjetas SIM Express -->
+                            <div style="margin-top: 20px;">
+                                <h4 style="color: #1e40af; margin-bottom: 12px;">📱 SIM Express - Ventas del período</h4>
+                                <div class="stats-grid" id="contadoSimExpressStatsGrid">
+                                    <div class="stat-card" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); cursor: default;">
+                                        <div class="stat-number" id="contadoSimTotalUnidades">0</div>
+                                        <div class="stat-label">📊 Total Unidades</div>
+                                    </div>
+                                    <div class="stat-card" style="background: #059669; cursor: pointer;" id="contadoSimChipExpress" data-concept="Chip Express Plus">
+                                        <div class="stat-number" id="contadoSimChipExpressCount">0</div>
+                                        <div class="stat-label">Chip Express Plus</div>
+                                    </div>
+                                    <div class="stat-card" style="background: #f59e0b; cursor: pointer;" id="contadoSimActivacionESIM" data-concept="Activacion ESIM">
+                                        <div class="stat-number" id="contadoSimActivacionESIMCount">0</div>
+                                        <div class="stat-label">Activación ESIM</div>
+                                    </div>
+                                    <div class="stat-card" style="background: #3b82f6; cursor: pointer;" id="contadoSimPortabilidadServicel" data-concept="Portabilidad Servicel">
+                                        <div class="stat-number" id="contadoSimPortabilidadServicelCount">0</div>
+                                        <div class="stat-label">Portabilidad Servicel</div>
+                                    </div>
+                                    <div class="stat-card" style="background: #ea580c; cursor: pointer;" id="contadoSimPortabilidadTelcel" data-concept="Portabilidad Telcel">
+                                        <div class="stat-number" id="contadoSimPortabilidadTelcelCount">0</div>
+                                        <div class="stat-label">Portabilidad Telcel</div>
+                                    </div>
+                                    <div class="stat-card" style="background: #8b5cf6; cursor: pointer;" id="contadoSimRecuperacion" data-concept="Recuperacion de numero">
+                                        <div class="stat-number" id="contadoSimRecuperacionCount">0</div>
+                                        <div class="stat-label">Recuperación de número</div>
+                                    </div>
+                                    <div class="stat-card" style="background: #ec489a; cursor: pointer;" id="contadoSimExpressNuevo" data-concept="Express Numero Nuevo">
+                                        <div class="stat-number" id="contadoSimExpressNuevoCount">0</div>
+                                        <div class="stat-label">Express Número Nuevo</div>
+                                    </div>
+                                </div>
+                                <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 8px; text-align: center;">
+                                    💡 Haz clic en cualquier tarjeta de concepto para ver el detalle
+                                </div>
+                            </div>
+
+                            <!-- Gráfica SIM Express (NUEVA) -->
+                            <div id="contadoSimChartContainer" style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; margin: 20px 0;">
+                                <h4 style="color: #1e40af; margin-bottom: 16px;">📊 Distribución de SIM Express</h4>
+                                <div style="position: relative; height: 280px;">
+                                    <canvas id="contadoSimChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Tarjetas de clasificación -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 20px 0;">
+                                <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);">
+                                    <div class="stat-number" id="contadoStatAccesorios">0</div>
+                                    <div class="stat-label">📱 Accesorios</div>
+                                </div>
+                                <div class="stat-card" style="background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);">
+                                    <div class="stat-number" id="contadoStatMenos1500">0</div>
+                                    <div class="stat-label">📱 Teléfonos &lt; $1,500</div>
+                                </div>
+                                <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%);">
+                                    <div class="stat-number" id="contadoStatMas1500">0</div>
+                                    <div class="stat-label">📱 Teléfonos ≥ $1,500</div>
+                                </div>
+                            </div>
+
+                            <!-- Gráfica 2: Barras clasificación -->
+                            <div style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                                <h4 style="color: #1e40af; margin-bottom: 16px;">📊 Ventas por Clasificación</h4>
+                                <div style="position: relative; height: 300px;">
+                                    <canvas id="contadoClassificationChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mensaje de bienvenida (se muestra cuando no hay datos cargados) -->
+                        <div id="contadoWelcomeMessage" class="welcome-message">
+                            <h3>👋 ¡Bienvenido!</h3>
+                            <p>Selecciona una fecha de inicio y presiona "Consultar" para ver los datos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== MÓDULO: CRÉDITO ==================== -->
+            <div id="creditoModule" class="module">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🏦 Ventas a Crédito</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Selector de fecha -->
+                        <div style="background: #f8fafc; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                            <div>
+                                <label style="font-weight: 600; color: #1e3a8a; font-size: 0.85rem; display: block; margin-bottom: 4px;">📅 Fecha de inicio del período (14 días)</label>
+                                <input type="date" id="creditDatePicker" style="padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;">
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: flex-end;">
+                                <button id="creditApplyBtn" style="padding: 10px 24px; width: auto; font-size: 0.9rem; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);">📊 Consultar</button>
+                            </div>
+                            <div style="margin-left: auto; font-size: 0.85rem; color: #64748b;">
+                                <span id="creditPeriodInfo">📅 Selecciona una fecha y presiona "Consultar"</span>
+                            </div>
+                        </div>
+
+                        <!-- Loading -->
+                        <div id="creditLoading" style="display: none; text-align: center; padding: 40px;">
+                            <span class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></span>
+                            <p style="margin-top: 12px; color: #64748b;">Consultando ventas a crédito...</p>
+                        </div>
+
+                        <!-- Empty state -->
+                        <div id="creditEmpty" style="display: none; text-align: center; padding: 40px; color: #94a3b8;">
+                            <div style="font-size: 3rem; margin-bottom: 12px;">🏦</div>
+                            <p>No se encontraron ventas a crédito en el período seleccionado</p>
+                        </div>
+
+                        <!-- Estadísticas -->
+                        <div id="creditStats" class="stats-grid" style="display: none;"></div>
+
+                        <!-- Gráfica -->
+                        <div id="creditChartContainer" style="display: none; background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; margin: 20px 0;">
+                            <h4 style="color: #1e40af; margin-bottom: 16px;">📊 Ventas por Plataforma de Crédito</h4>
+                            <div style="position: relative; height: 280px;">
+                                <canvas id="creditChart"></canvas>
+                            </div>
+                            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 8px; text-align: center;">
+                                💡 Haz clic en una barra para filtrar la tabla
+                            </div>
+                        </div>
+
+                        <!-- Resultados (tabla) -->
+                        <div id="creditResults" style="display: none; margin-top: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== MODALES DE TRANSFERENCIAS Y CANCELACIONES ==================== -->
+    <!-- Los modales se generan dinámicamente desde JS -->
+
+    <!-- ==================== SCRIPTS ==================== -->
+    <!-- Chart.js para gráficas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Configuración y autenticación -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <!-- Módulos -->
+    <script src="js/contado.js"></script>
+    <script src="js/credito.js"></script>
+    <script src="js/transferencias.js"></script>
+    <script src="js/cancelaciones.js"></script>
+    
+    <!-- Inicialización principal -->
+    <script src="js/main.js"></script>
+</body>
+</html>
