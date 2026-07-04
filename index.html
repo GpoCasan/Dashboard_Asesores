@@ -56,6 +56,10 @@
                     <span class="sidebar-icon">🏦</span>
                     <span class="sidebar-label">Crédito</span>
                 </div>
+                <div class="sidebar-item" data-module="listasPrecios">
+                    <span class="sidebar-icon">📋</span>
+                    <span class="sidebar-label">Listas de Precios</span>
+                </div>
             </div>
             
             <div class="sidebar-footer">
@@ -304,8 +308,51 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ==================== MÓDULO: LISTAS DE PRECIOS ==================== -->
+            <div id="listasPreciosModule" class="module">
+                <div class="card">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2>📋 Listas de Precios</h2>
+                        <a href="https://www.r8.telcel.com/consultaPromoNacional/" target="_blank" style="
+                            background: rgba(255,255,255,0.2);
+                            color: white;
+                            padding: 6px 16px;
+                            border-radius: 8px;
+                            text-decoration: none;
+                            font-size: 0.85rem;
+                            font-weight: 600;
+                            transition: all 0.2s;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 6px;
+                        " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                            🔗 R8 Telcel
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <!-- Pestañas -->
+                        <div id="listasTabsContainer" class="listas-tabs">
+                            <!-- Generado por JavaScript -->
+                        </div>
+                        
+                        <!-- Loading -->
+                        <div id="listasLoading" class="listas-loading" style="display: none;">
+                            <span class="spinner"></span>
+                            <p>Cargando imágenes...</p>
+                        </div>
+                        
+                        <!-- Contenido -->
+                        <div id="listasContentContainer" class="listas-content">
+                            <!-- Generado por JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>          
         </main>
     </div>
+
+
 
     <!-- ==================== MODALES DE TRANSFERENCIAS Y CANCELACIONES ==================== -->
     <!-- Los modales se generan dinámicamente desde JS -->
@@ -323,6 +370,7 @@
     <script src="js/credito.js"></script>
     <script src="js/transferencias.js"></script>
     <script src="js/cancelaciones.js"></script>
+    <script src="js/listas-precios.js"></script>
     
     <!-- Inicialización principal -->
     <script src="js/main.js"></script>

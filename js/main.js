@@ -125,7 +125,10 @@ async function handleLogin() {
                 location.reload();
              }, 800);
         }
-        
+        if (typeof initListasPrecios === 'function') {
+            setTimeout(function() { initListasPrecios(); }, 900);
+        }
+
         switchModule('dashboard');
         
         console.log('✅ Dashboard cargado correctamente');
@@ -307,6 +310,10 @@ function initializeApp() {
                 setTimeout(function() { initCancelacionesModule(); }, 800);
             }
             
+            if (typeof initListasPrecios === 'function') {
+                setTimeout(function() { initListasPrecios(); }, 900);
+            }
+
             switchModule('dashboard');
             return;
         }
