@@ -1493,6 +1493,85 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ==================== MOSTRAR/OCULTAR LOADING ====================
+
+function showLoading() {
+    // Buscar el card-body del módulo de contado
+    var contadoModule = document.getElementById('contadoModule');
+    if (!contadoModule) {
+        console.warn('⚠️ No se encontró el módulo de contado');
+        return;
+    }
+    
+    var cardBody = contadoModule.querySelector('.card-body');
+    if (!cardBody) {
+        console.warn('⚠️ No se encontró el card-body');
+        return;
+    }
+    
+    // Crear el overlay de carga si no existe
+    var loadingOverlay = document.getElementById('contadoLoadingOverlay');
+    if (!loadingOverlay) {
+        loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'contadoLoadingOverlay';
+        loadingOverlay.style.cssText = 
+            'position: absolute;' +
+            'top: 0; left: 0;' +
+            'width: 100%; height: 100%;' +
+            'background: rgba(255, 255, 255, 0.92);' +
+            'display: none;' +
+            'justify-content: center;' +
+            'align-items: center;' +
+            'flex-direction: column;' +
+            'z-index: 1000;' +
+            'border-radius: 12px;' +
+            'backdrop-filter: blur(4px);';
+        
+        // Asegurar que el card-body tenga posición relativa
+        cardBody.style.position = 'relative';
+        cardBody.appendChild(loadingOverlay);
+    }
+    
+    // Agregar contenido del loading
+    loadingOverlay.innerHTML = 
+        '<div style="text-align: center; padding: 20px;">' +
+        '<div style="width: 55px; height: 55px; border: 5px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: contadoSpin 0.8s linear infinite; margin: 0 auto 20px;"></div>' +
+        '<div style="font-size: 1.2rem; color: #1e293b; font-weight: 600;">Consultando datos...</div>' +
+        '<div style="font-size: 0.9rem; color: #64748b; margin-top: 6px;">Por favor espera, esto puede tomar unos segundos</div>' +
+        '<div style="margin-top: 16px;">' +
+        '<div style="display: inline-block; width: 8px; height: 8px; background: #3b82f6; border-radius: 50%; margin: 0 4px; animation: contadoDot 1.4s ease-in-out infinite;"></div>' +
+        '<div style="display: inline-block; width: 8px; height: 8px; background: #3b82f6; border-radius: 50%; margin: 0 4px; animation: contadoDot 1.4s ease-in-out 0.2s infinite;"></div>' +
+        '<div style="display: inline-block; width: 8px; height: 8px; background: #3b82f6; border-radius: 50%; margin: 0 4px; animation: contadoDot 1.4s ease-in-out 0.4s infinite;"></div>' +
+        '</div>' +
+        '</div>';
+    
+    // Asegurar que la animación spin existe
+    if (!document.getElementById('contadoSpinStyle')) {
+        var style = document.createElement('style');
+        style.id = 'contadoSpinStyle';
+        style.textContent = 
+            '@keyframes contadoSpin {' +
+            '  0% { transform: rotate(0deg); }' +
+            '  100% { transform: rotate(360deg); }' +
+            '}' +
+            '@keyframes contadoDot {' +
+            '  0%, 60%, 100% { transform: scale(0.4); opacity: 0.4; }' +
+            '  30% { transform: scale(1); opacity: 1; }' +
+            '}';
+        document.head.appendChild(style);
+    }
+    
+    // Mostrar el overlay
+    loadingOverlay.style.display = 'flex';
+}
+
+function hideLoading() {
+    var loadingOverlay = document.getElementById('contadoLoadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+    }
+}
+
 // ==================== CONFIGURAR TARJETAS ====================
 
 function setupSimExpressCards() {
@@ -1584,31 +1663,23 @@ async function loadContadoData() {
         
         console.log('📊 Cargando datos para: ' + user.name);
         
-        if (contadoWelcomeMessage) contadoWelcomeMessage.style.display = 'none';
-        if (contadoResultsContainer) contadoResultsContainer.style.display = 'block';
+        // ========== MOSTRAR LOADING SOBRE LA PANTALLA DE BIENVENIDA ==========
+        showLoading();
         
-        // Mostrar loading
-        var ventasEl = document.getElementById('contadoStatVentas');
-        var promedioEl = document.getElementById('contadoStatPromedio');
-        var diasEl = document.getElementById('contadoStatDias');
-        var diasTotalesEl = document.getElementById('contadoStatDiasTotales');
-        
-        if (ventasEl) ventasEl.textContent = '...';
-        if (promedioEl) promedioEl.textContent = '...';
-        if (diasEl) diasEl.textContent = '...';
-        if (diasTotalesEl) diasTotalesEl.textContent = '...';
+        // Ocultar resultados anteriores si los hay
+        if (contadoResultsContainer) contadoResultsContainer.style.display = 'none';
         
         var completeDays = dateRangeObj.completeDays;
         
         if (completeDays.length === 0) {
             if (contadoPeriodInfo) contadoPeriodInfo.textContent = '⚠️ No hay días completos';
-            if (contadoResultsContainer) contadoResultsContainer.style.display = 'none';
             if (contadoWelcomeMessage) {
                 contadoWelcomeMessage.style.display = 'block';
                 contadoWelcomeMessage.innerHTML = 
                     '<h3>⏳ Esperando días completos</h3>' +
-                    '<p>Espera a que termine el día para ver datos.</p>';
+                    '<p>El período seleccionado comienza hoy, espera a que termine el día para ver datos.</p>';
             }
+            hideLoading();
             isLoading = false;
             return;
         }
@@ -1637,6 +1708,11 @@ async function loadContadoData() {
         );
         
         // Actualizar estadísticas
+        var ventasEl = document.getElementById('contadoStatVentas');
+        var promedioEl = document.getElementById('contadoStatPromedio');
+        var diasEl = document.getElementById('contadoStatDias');
+        var diasTotalesEl = document.getElementById('contadoStatDiasTotales');
+        
         if (ventasEl) ventasEl.textContent = '$' + formatCurrency(processedData.totalSales, 0);
         if (promedioEl) promedioEl.textContent = '$' + formatCurrency(processedData.average, 0);
         if (diasEl) diasEl.textContent = formatNumber(processedData.daysWithSales);
@@ -1704,6 +1780,13 @@ async function loadContadoData() {
             console.error('❌ Error en SIM Express:', simError);
         }
         
+        // ========== OCULTAR LOADING Y MOSTRAR RESULTADOS ==========
+        hideLoading();
+        
+        // Ocultar mensaje de bienvenida y mostrar resultados
+        if (contadoWelcomeMessage) contadoWelcomeMessage.style.display = 'none';
+        if (contadoResultsContainer) contadoResultsContainer.style.display = 'block';
+        
         isDataLoaded = true;
         isLoading = false;
         
@@ -1717,6 +1800,7 @@ async function loadContadoData() {
                 '<h3>❌ Error</h3>' +
                 '<p>' + error.message + '</p>';
         }
+        hideLoading();
         isLoading = false;
     }
 }
@@ -1762,7 +1846,7 @@ function setupContadoDatePicker() {
         });
     }
     
-    // Estado inicial
+    // Estado inicial: mostrar solo el mensaje de bienvenida
     if (contadoResultsContainer) contadoResultsContainer.style.display = 'none';
     if (contadoWelcomeMessage) {
         contadoWelcomeMessage.style.display = 'block';
