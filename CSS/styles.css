@@ -1103,3 +1103,229 @@ body {
         text-align: center;
     }
 }
+/* ==================== BOTÓN TAE ==================== */
+.btn-tae {
+    position: relative;
+}
+
+.btn-tae .badge-header {
+    background: #8b5cf6;
+}
+
+/* ==================== MODAL TAE INVENTORY ==================== */
+.modal-tae {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.modal-tae.active {
+    display: flex;
+}
+
+.modal-tae .modal-content {
+    background: white;
+    border-radius: 16px;
+    max-width: 700px;
+    width: 95%;
+    max-height: 85vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-tae .modal-header {
+    background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+    color: white;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-tae .modal-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.2rem;
+}
+
+.modal-tae .modal-header .close-modal {
+    font-size: 28px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    background: none;
+    border: none;
+    color: white;
+}
+
+.modal-tae .modal-header .close-modal:hover {
+    opacity: 1;
+}
+
+.modal-tae .modal-body {
+    padding: 24px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-tae .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Resumen de estadísticas */
+.tae-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.tae-stat-card {
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+
+.tae-stat-card .stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.tae-stat-card .stat-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+/* Tabla de inventario TAE */
+.tae-table-container {
+    overflow-x: auto;
+    margin-top: 12px;
+}
+
+.tae-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.tae-table thead {
+    background: #f8fafc;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.tae-table th {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 2px solid #e2e8f0;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tae-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #1e293b;
+}
+
+.tae-table tr:hover td {
+    background: #f1f5f9;
+}
+
+.tae-table .stock-badge {
+    display: inline-block;
+    padding: 2px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.tae-table .stock-high {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.tae-table .stock-medium {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.tae-table .stock-low {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.tae-table .stock-zero {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+/* Estados vacíos y loading */
+.tae-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #94a3b8;
+}
+
+.tae-empty .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+}
+
+.tae-empty h4 {
+    color: #1e293b;
+    margin-bottom: 8px;
+}
+
+.tae-loading {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-30px) scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

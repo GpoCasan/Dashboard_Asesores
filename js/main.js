@@ -121,12 +121,16 @@ async function handleLogin() {
         }
         
         if (typeof initCancelacionesModule === 'function') {
-            setTimeout(function() { initCancelacionesModule();
-                location.reload();
-             }, 800);
+            setTimeout(function() { initCancelacionesModule(); }, 800);
         }
+        
         if (typeof initListasPrecios === 'function') {
             setTimeout(function() { initListasPrecios(); }, 900);
+        }
+        
+        // ===== NUEVO: INICIALIZAR TAE MODAL =====
+        if (typeof initTaeModal === 'function') {
+            setTimeout(function() { initTaeModal(); }, 950);
         }
 
         switchModule('dashboard');
@@ -182,6 +186,11 @@ function updateUserInfo() {
 
 function handleLogout() {
     console.log('🚪 Cerrando sesión...');
+    
+    // Limpiar recursos TAE Modal
+    if (window.TaeModal && typeof window.TaeModal.close === 'function') {
+        window.TaeModal.close();
+    }
     
     if (typeof logout === 'function') {
         logout(); // Esta función ya incluye la recarga
@@ -312,6 +321,11 @@ function initializeApp() {
             
             if (typeof initListasPrecios === 'function') {
                 setTimeout(function() { initListasPrecios(); }, 900);
+            }
+            
+            // ===== NUEVO: INICIALIZAR TAE MODAL =====
+            if (typeof initTaeModal === 'function') {
+                setTimeout(function() { initTaeModal(); }, 950);
             }
 
             switchModule('dashboard');

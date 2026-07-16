@@ -82,6 +82,11 @@
                     </div>
                 </div>
                 <div class="header-actions">
+                    <!-- Botón TAE Inventory -->
+                    <button class="btn-header btn-tae" id="btnTaeInventory" title="Inventario TAE">
+                        📱
+                        <span id="badgeTae" class="badge-header">0</span>
+                    </button>
                     <!-- Botón Transferencias -->
                     <button class="btn-header" id="btnTransferencias" title="Transferencias Pendientes">
                         📦
@@ -214,7 +219,7 @@
                                 </div>
                             </div>
 
-                            <!-- Gráfica SIM Express (NUEVA) -->
+                            <!-- Gráfica SIM Express -->
                             <div id="contadoSimChartContainer" style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; margin: 20px 0;">
                                 <h4 style="color: #1e40af; margin-bottom: 16px;">📊 Distribución de SIM Express</h4>
                                 <div style="position: relative; height: 280px;">
@@ -224,15 +229,15 @@
 
                             <!-- Tarjetas de clasificación -->
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 20px 0;">
-                                <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);">
+                                <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); cursor: pointer;" id="contadoStatAccesorios" data-classification-type="accesorios">
                                     <div class="stat-number" id="contadoStatAccesorios">0</div>
                                     <div class="stat-label">📱 Accesorios</div>
                                 </div>
-                                <div class="stat-card" style="background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);">
+                                <div class="stat-card" style="background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); cursor: pointer;" id="contadoStatMenos1500" data-classification-type="menos1500">
                                     <div class="stat-number" id="contadoStatMenos1500">0</div>
                                     <div class="stat-label">📱 Teléfonos &lt; $1,500</div>
                                 </div>
-                                <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%);">
+                                <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%); cursor: pointer;" id="contadoStatMas1500" data-classification-type="mas1500">
                                     <div class="stat-number" id="contadoStatMas1500">0</div>
                                     <div class="stat-label">📱 Teléfonos ≥ $1,500</div>
                                 </div>
@@ -352,11 +357,6 @@
         </main>
     </div>
 
-
-
-    <!-- ==================== MODALES DE TRANSFERENCIAS Y CANCELACIONES ==================== -->
-    <!-- Los modales se generan dinámicamente desde JS -->
-
     <!-- ==================== SCRIPTS ==================== -->
     <!-- Chart.js para gráficas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -371,6 +371,7 @@
     <script src="js/transferencias.js"></script>
     <script src="js/cancelaciones.js"></script>
     <script src="js/listas-precios.js"></script>
+    <script src="js/tae-modal.js"></script>
     
     <!-- Inicialización principal -->
     <script src="js/main.js"></script>

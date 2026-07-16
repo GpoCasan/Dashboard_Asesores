@@ -1,71 +1,84 @@
-// ==================== SISTEMA DE AUTENTICACIÓN CON ERP ====================
+// ==================== MÓDULO DE AUTENTICACIÓN ====================
 
-let currentUser = null;
-let userBranches = [];
-let userWarehouses = [];
+console.log('🔐 Cargando módulo de autenticación...');
 
-// ==================== LOGIN ====================
+// ==================== DOM ELEMENTS ====================
+var loginOverlay = document.getElementById('loginOverlay');
+var dashboard = document.getElementById('dashboard');
+var loginBtn = document.getElementById('loginBtn');
+var loginEmail = document.getElementById('loginEmail');
+var loginPassword = document.getElementById('loginPassword');
+var loginError = document.getElementById('loginError');
+var loginLoading = document.getElementById('loginLoading');
+var logoutBtn = document.getElementById('logoutBtn');
+var userNameDisplay = document.getElementById('userNameDisplay');
+var userAvatar = document.getElementById('userAvatar');
+var userBranch = document.getElementById('userBranch');
+var userWarehouse = document.getElementById('userWarehouse');
 
+// ==================== FUNCIONES DE AUTENTICACIÓN ====================
+
+/**
+ * Inicia sesión en el sistema ERP
+ * @param {string} email - Correo electrónico
+ * @param {string} password - Contraseña
+ * @returns {Promise<Object>} - Datos del usuario autenticado
+ */
 async function loginERP(email, password) {
+    console.log('🔐 Intentando login para:', email);
+    
     try {
-        console.log('🔐 Autenticando con el ERP...');
-        
         const response = await fetch(CONFIG.AUTH_LOGIN, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
         });
-        
-        const rawText = await response.text();
-        let data;
-        try {
-            data = JSON.parse(rawText);
-        } catch (e) {
-            throw new Error('Error al parsear la respuesta del servidor');
-        }
-        
+
         if (!response.ok) {
-            const errorMsg = data.message || data.error || `Error ${response.status}`;
-            throw new Error(errorMsg);
+            let errorMessage = 'Credenciales incorrectas';
+            try {
+                const errorData = await response.json();
+                if (errorData.message) {
+                    errorMessage = errorData.message;
+                }
+            } catch (e) {
+                // Ignorar
+            }
+            throw new Error(errorMessage);
+        }
+
+        const data = await response.json();
+        console.log('✅ Login exitoso');
+        
+        // Extraer datos del usuario
+        const user = data.user || data.data || data;
+        
+        // Guardar token
+        if (user.token) {
+            CONFIG.FIXED_TOKEN = user.token;
+            window.API_TOKEN = user.token;
+            localStorage.setItem('api_token', user.token);
+        } else if (data.token) {
+            CONFIG.FIXED_TOKEN = data.token;
+            window.API_TOKEN = data.token;
+            localStorage.setItem('api_token', data.token);
         }
         
-        let token = null;
-        let userData = null;
+        // Guardar usuario en window
+        window.currentUser = user;
         
-        if (data.token) {
-            token = data.token;
-        } else if (data.data && data.data.token) {
-            token = data.data.token;
-        } else if (data.access_token) {
-            token = data.access_token;
-        } else if (data.data && data.data.access_token) {
-            token = data.data.access_token;
+        // Llamar a afterSuccessfulLogin si existe
+        if (typeof afterSuccessfulLogin === 'function') {
+            afterSuccessfulLogin(user);
         }
         
-        if (data.data) {
-            userData = data.data;
-        } else {
-            userData = data;
-        }
-        
-        if (!token) {
-            throw new Error('No se recibió token de autenticación');
-        }
-        
-        CONFIG.FIXED_TOKEN = token;
-        
-        currentUser = {
-            id: userData.id,
-            name: userData.name,
-            email: userData.email,
-            token: token
-        };
-        
-        console.log(`✅ Usuario autenticado: ${currentUser.name} (ID: ${currentUser.id})`);
-        return currentUser;
+        return user;
         
     } catch (error) {
         console.error('❌ Error en login:', error);
@@ -73,30 +86,44 @@ async function loginERP(email, password) {
     }
 }
 
-// ==================== OBTENER SUCURSALES DEL USUARIO ====================
-
+/**
+ * Obtiene las sucursales del usuario
+ * @param {number} userId - ID del usuario
+ * @returns {Promise<Array>} - Lista de sucursales
+ */
 async function fetchUserBranches(userId) {
     try {
         const url = CONFIG.AUTH_USER_BRANCHES.replace('{userId}', userId);
-        console.log('📡 Obteniendo sucursales del usuario:', url);
+        console.log('🏪 Obteniendo sucursales:', url);
         
         const response = await fetch(url, {
             headers: {
-                'Authorization': `Bearer ${CONFIG.FIXED_TOKEN}`,
+                'Authorization': 'Bearer ' + CONFIG.FIXED_TOKEN,
                 'Accept': 'application/json'
             }
         });
-        
+
         if (!response.ok) {
-            throw new Error(`Error ${response.status} al obtener sucursales`);
+            console.warn('⚠️ Error al obtener sucursales:', response.status);
+            return [];
         }
-        
+
         const data = await response.json();
         const branches = data.data || data || [];
-        userBranches = Array.isArray(branches) ? branches : [];
+        console.log('🏪 Sucursales obtenidas:', branches.length);
+        console.log('🏪 Detalle sucursales:', branches);
         
-        console.log(`✅ ${userBranches.length} sucursales obtenidas`);
-        return userBranches;
+        // Guardar en window
+        window.userBranches = branches;
+        
+        // Guardar en sessionStorage para recuperación
+        try {
+            sessionStorage.setItem('dashboard_branches', JSON.stringify(branches));
+        } catch (e) {
+            console.warn('⚠️ Error guardando branches en sessionStorage:', e);
+        }
+        
+        return branches;
         
     } catch (error) {
         console.error('❌ Error obteniendo sucursales:', error);
@@ -104,30 +131,44 @@ async function fetchUserBranches(userId) {
     }
 }
 
-// ==================== OBTENER ALMACENES DEL USUARIO ====================
-
+/**
+ * Obtiene los almacenes del usuario
+ * @param {number} userId - ID del usuario
+ * @returns {Promise<Array>} - Lista de almacenes
+ */
 async function fetchUserWarehouses(userId) {
     try {
         const url = CONFIG.AUTH_USER_WAREHOUSES.replace('{userId}', userId);
-        console.log('📡 Obteniendo almacenes del usuario:', url);
+        console.log('🏭 Obteniendo almacenes:', url);
         
         const response = await fetch(url, {
             headers: {
-                'Authorization': `Bearer ${CONFIG.FIXED_TOKEN}`,
+                'Authorization': 'Bearer ' + CONFIG.FIXED_TOKEN,
                 'Accept': 'application/json'
             }
         });
-        
+
         if (!response.ok) {
-            throw new Error(`Error ${response.status} al obtener almacenes`);
+            console.warn('⚠️ Error al obtener almacenes:', response.status);
+            return [];
         }
-        
+
         const data = await response.json();
         const warehouses = data.data || data || [];
-        userWarehouses = Array.isArray(warehouses) ? warehouses : [];
+        console.log('🏭 Almacenes obtenidos:', warehouses.length);
+        console.log('🏭 Detalle almacenes:', warehouses);
         
-        console.log(`✅ ${userWarehouses.length} almacenes obtenidos`);
-        return userWarehouses;
+        // Guardar en window
+        window.userWarehouses = warehouses;
+        
+        // Guardar en sessionStorage para recuperación
+        try {
+            sessionStorage.setItem('dashboard_warehouses', JSON.stringify(warehouses));
+        } catch (e) {
+            console.warn('⚠️ Error guardando warehouses en sessionStorage:', e);
+        }
+        
+        return warehouses;
         
     } catch (error) {
         console.error('❌ Error obteniendo almacenes:', error);
@@ -135,229 +176,203 @@ async function fetchUserWarehouses(userId) {
     }
 }
 
-// ==================== LIMPIAR TODOS LOS DATOS DE SESIÓN ====================
+// ==================== FUNCIONES DE SESIÓN ====================
+
+function saveDashboardData(user, branches, warehouses) {
+    try {
+        sessionStorage.setItem('dashboard_user', JSON.stringify(user));
+        sessionStorage.setItem('dashboard_branches', JSON.stringify(branches || []));
+        sessionStorage.setItem('dashboard_warehouses', JSON.stringify(warehouses || []));
+        console.log('💾 Datos guardados en sessionStorage');
+    } catch (error) {
+        console.error('❌ Error guardando datos:', error);
+    }
+}
+
+function hasStoredSession() {
+    try {
+        var user = sessionStorage.getItem('dashboard_user');
+        return user !== null && user !== 'undefined' && user !== 'null';
+    } catch (error) {
+        return false;
+    }
+}
+
+function restoreSession() {
+    try {
+        var userData = sessionStorage.getItem('dashboard_user');
+        if (!userData) return false;
+        
+        var user = JSON.parse(userData);
+        if (!user || !user.id) return false;
+        
+        window.currentUser = user;
+        CONFIG.FIXED_TOKEN = user.token;
+        
+        var branches = JSON.parse(sessionStorage.getItem('dashboard_branches') || '[]');
+        var warehouses = JSON.parse(sessionStorage.getItem('dashboard_warehouses') || '[]');
+        
+        window.userBranches = branches;
+        window.userWarehouses = warehouses;
+        
+        console.log('🔐 Sesión restaurada: ' + window.currentUser.name);
+        console.log('📱 Branches restaurados:', branches);
+        console.log('📱 Warehouses restaurados:', warehouses);
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Error restaurando sesión:', error);
+        return false;
+    }
+}
 
 function clearAllSessionData() {
-    console.log('🧹 Limpiando todos los datos de sesión...');
-    
-    // Limpiar variables globales
-    CONFIG.FIXED_TOKEN = null;
-    currentUser = null;
-    userBranches = [];
-    userWarehouses = [];
-    
-    // Limpiar sessionStorage (todo)
     try {
-        sessionStorage.clear();
-    } catch (e) {
-        console.warn('Error limpiando sessionStorage:', e);
+        sessionStorage.removeItem('dashboard_user');
+        sessionStorage.removeItem('dashboard_branches');
+        sessionStorage.removeItem('dashboard_warehouses');
+        localStorage.removeItem('api_token');
+        window.currentUser = null;
+        window.userBranches = [];
+        window.userWarehouses = [];
+        CONFIG.FIXED_TOKEN = null;
+        window.API_TOKEN = null;
+        console.log('🧹 Datos de sesión eliminados');
+    } catch (error) {
+        console.error('❌ Error limpiando sesión:', error);
     }
-    
-    // Limpiar localStorage (datos de facturas, etc.)
-    const keysToRemove = [
-        'facturasProcessedData',
-        'facturasCsvFile', 
-        'facturasBarcodeData',
-        'facturasOriginalFileName',
-        'facturasShowTable2',
-        'selected_start_date'
-    ];
-    
-    keysToRemove.forEach(key => {
-        try {
-            localStorage.removeItem(key);
-        } catch (e) {
-            console.warn('Error eliminando localStorage key:', key, e);
-        }
-    });
-    
-    // Limpiar cachés de módulos
-    if (typeof window.limpiarCacheTransferencias === 'function') {
-        window.limpiarCacheTransferencias();
-    }
-    
-    if (typeof window.limpiarCacheCancelaciones === 'function') {
-        window.limpiarCacheCancelaciones();
-    }
-    
-    console.log('✅ Todos los datos de sesión han sido limpiados');
 }
 
-// ==================== LIMPIAR INTERFAZ VISUAL ====================
+// ==================== FUNCIONES GLOBALES ====================
 
-function limpiarInterfazVisual() {
-    console.log('🧹 Limpiando interfaz visual...');
+function getCurrentUser() {
+    return window.currentUser || null;
+}
+
+function getUserBranches() {
+    return window.userBranches || [];
+}
+
+function getUserWarehouses() {
+    return window.userWarehouses || [];
+}
+
+// ==================== AFTER LOGIN SUCCESSFUL ====================
+
+/**
+ * Función que se ejecuta después de un login exitoso
+ * @param {Object} userData - Datos del usuario autenticado
+ */
+function afterSuccessfulLogin(userData) {
+    console.log('✅ Login exitoso:', userData.name || 'Usuario');
+    console.log('📱 userData completo:', userData);
+    console.log('📱 branch_id en userData:', userData.branch_id);
+    console.log('📱 warehouse_id en userData:', userData.warehouse_id);
     
-    // 1. Resetear badges
-    const badges = document.querySelectorAll('.badge-header, #badgeTransferencias, #badgeCancelaciones');
-    badges.forEach(function(badge) {
-        if (badge) {
-            badge.style.display = 'none';
-            badge.textContent = '0';
-        }
-    });
+    // Guardar usuario actual globalmente
+    window.currentUser = userData;
     
-    // 2. Resetear información del usuario
-    const userNameDisplay = document.getElementById('userNameDisplay');
+    // Ocultar login y mostrar dashboard
+    if (loginOverlay) loginOverlay.style.display = 'none';
+    if (dashboard) dashboard.style.display = 'flex';
+    
+    // Mostrar información del usuario
+    updateUserInfo(userData);
+    
+    // Cargar otros módulos que dependan del usuario
+    if (typeof loadInitialData === 'function') {
+        loadInitialData();
+    }
+}
+
+// ==================== UPDATE USER INFO ====================
+
+function updateUserInfo(userData) {
+    var user = userData || getCurrentUser();
+    var branches = getUserBranches();
+    var warehouses = getUserWarehouses();
+    
+    if (!user) {
+        console.warn('⚠️ No hay usuario para mostrar');
+        return;
+    }
+    
+    console.log('📱 Actualizando info de usuario:', user.name);
+    console.log('📱 Branches disponibles:', branches);
+    console.log('📱 Warehouses disponibles:', warehouses);
+    
     if (userNameDisplay) {
-        userNameDisplay.textContent = 'Cargando...';
+        userNameDisplay.textContent = user.name || 'Usuario';
     }
     
-    const userAvatar = document.getElementById('userAvatar');
     if (userAvatar) {
-        userAvatar.textContent = '👤';
+        userAvatar.textContent = (user.name || 'U').charAt(0).toUpperCase();
     }
     
-    const userBranch = document.getElementById('userBranch');
     if (userBranch) {
-        userBranch.textContent = '🏪 Cargando tienda...';
-    }
-    
-    const userWarehouse = document.getElementById('userWarehouse');
-    if (userWarehouse) {
-        userWarehouse.textContent = '🏭 Cargando almacén...';
-    }
-    
-    // 3. Cerrar todos los modales abiertos
-    document.querySelectorAll('.modal').forEach(function(modal) {
-        if (modal && modal.parentNode) {
-            modal.parentNode.removeChild(modal);
+        if (branches && branches.length > 0) {
+            var branchNames = branches.map(function(b) { 
+                return b.name || b.branch_name || 'Sin nombre'; 
+            }).join(', ');
+            userBranch.textContent = '🏪 ' + branchNames;
+        } else {
+            userBranch.textContent = '🏪 Sin sucursal asignada';
         }
-    });
+    }
     
-    // 4. Resetear módulos
-    document.querySelectorAll('.module').forEach(function(module) {
-        // Resetear estadísticas
-        const stats = module.querySelectorAll('.stat-number');
-        stats.forEach(function(stat) {
-            stat.textContent = '0';
-        });
-        
-        // Resetear mensajes de bienvenida
-        const welcomeMessages = module.querySelectorAll('.welcome-message');
-        welcomeMessages.forEach(function(msg) {
-            msg.innerHTML = 
-                '<h3>👋 ¡Bienvenido!</h3>' +
-                '<p>Selecciona una fecha de inicio y presiona "Consultar" para ver los datos</p>';
-        });
-        
-        // Resetear información de período
-        const periodInfos = module.querySelectorAll('[id$="PeriodInfo"]');
-        periodInfos.forEach(function(info) {
-            info.textContent = '📅 Selecciona una fecha y presiona "Consultar"';
-        });
-        
-        // Resetear resultados
-        const results = module.querySelectorAll('#creditResults, #contadoResults');
-        results.forEach(function(result) {
-            if (result) {
-                result.innerHTML = '';
-                result.style.display = 'none';
-            }
-        });
-        
-        // Resetear contenedores de gráficas
-        const chartContainers = module.querySelectorAll('#creditChartContainer, #contadoChartContainer');
-        chartContainers.forEach(function(container) {
-            if (container) {
-                container.style.display = 'none';
-            }
-        });
-    });
-    
-    console.log('✅ Interfaz visual limpiada');
-}
-
-// ==================== RECARGAR PÁGINA FORZADAMENTE ====================
-
-function recargarPaginaForzada() {
-    console.log('🔄 Recargando página forzadamente...');
-    
-    // Opción 1: Usar location.reload(true) - ignora caché
-    try {
-        window.location.reload(true);
-    } catch (e) {
-        // Si falla, usar location.href con timestamp
-        console.warn('reload(true) falló, usando location.href...');
-        const url = window.location.href.split('?')[0];
-        window.location.href = url + '?_=' + Date.now();
+    if (userWarehouse) {
+        if (warehouses && warehouses.length > 0) {
+            var warehouseNames = warehouses.map(function(w) { 
+                return w.name || w.warehouse_name || 'Sin nombre'; 
+            }).join(', ');
+            userWarehouse.textContent = '🏭 ' + warehouseNames;
+        } else {
+            userWarehouse.textContent = '🏭 Sin almacén asignado';
+        }
     }
 }
 
-// ==================== CERRAR SESIÓN ====================
+// ==================== LOGOUT ====================
 
 function logout() {
     console.log('🚪 Cerrando sesión...');
     
-    // 1. Limpiar datos internos
+    // Limpiar recursos TAE Modal
+    if (window.TaeModal && typeof window.TaeModal.close === 'function') {
+        window.TaeModal.close();
+    }
+    
+    // Limpiar sesión
     clearAllSessionData();
     
-    // 2. Limpiar interfaz visual (antes de recargar)
-    limpiarInterfazVisual();
+    // Mostrar login
+    if (loginOverlay) loginOverlay.style.display = 'flex';
+    if (dashboard) dashboard.style.display = 'none';
     
-    // 3. Ocultar dashboard y mostrar login
-    const loginOverlay = document.getElementById('loginOverlay');
-    const dashboard = document.getElementById('dashboard');
-    
-    if (loginOverlay) {
-        loginOverlay.style.display = 'flex';
-    }
-    if (dashboard) {
-        dashboard.style.display = 'none';
-    }
-    
-    // 4. Limpiar campos de login
-    const loginEmail = document.getElementById('loginEmail');
-    const loginPassword = document.getElementById('loginPassword');
-    const loginError = document.getElementById('loginError');
-    
+    // Limpiar campos
     if (loginEmail) loginEmail.value = '';
     if (loginPassword) loginPassword.value = '';
     if (loginError) loginError.style.display = 'none';
     
-    console.log('✅ Sesión cerrada correctamente');
-    
-    // 5. RECARGAR LA PÁGINA FORZADAMENTE
-    // Usamos setTimeout para asegurar que los cambios visuales se apliquen
-    setTimeout(function() {
-        recargarPaginaForzada();
-    }, 300);
+    console.log('👋 Sesión cerrada correctamente');
 }
 
-// ==================== VERIFICAR SESIÓN ====================
-
-function checkSession() {
-    const savedUser = sessionStorage.getItem('dashboard_user');
-    if (savedUser) {
-        try {
-            const user = JSON.parse(savedUser);
-            currentUser = user;
-            CONFIG.FIXED_TOKEN = user.token;
-            
-            userBranches = JSON.parse(sessionStorage.getItem('dashboard_branches') || '[]');
-            userWarehouses = JSON.parse(sessionStorage.getItem('dashboard_warehouses') || '[]');
-            
-            console.log(`🔐 Sesión restaurada: ${currentUser.name}`);
-            return true;
-        } catch (e) {
-            console.error('Error restaurando sesión:', e);
-            clearAllSessionData();
-            return false;
-        }
-    }
-    return false;
+function recargarPaginaForzada() {
+    console.log('🔄 Recargando página...');
+    window.location.reload(true);
 }
 
 // ==================== EXPORTAR ====================
-
 window.loginERP = loginERP;
 window.fetchUserBranches = fetchUserBranches;
 window.fetchUserWarehouses = fetchUserWarehouses;
+window.getCurrentUser = getCurrentUser;
+window.getUserBranches = getUserBranches;
+window.getUserWarehouses = getUserWarehouses;
 window.logout = logout;
-window.checkSession = checkSession;
 window.clearAllSessionData = clearAllSessionData;
-window.limpiarInterfazVisual = limpiarInterfazVisual;
 window.recargarPaginaForzada = recargarPaginaForzada;
-window.getCurrentUser = () => currentUser;
-window.getUserBranches = () => userBranches;
-window.getUserWarehouses = () => userWarehouses;
+window.afterSuccessfulLogin = afterSuccessfulLogin;
+window.updateUserInfo = updateUserInfo;
+
+console.log('🔐 Módulo de autenticación cargado correctamente');
