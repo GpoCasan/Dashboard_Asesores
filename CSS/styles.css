@@ -1802,3 +1802,47 @@ body {
         text-align: center;
     }
 }
+/* ==================== NOTIFICACIONES TAE ==================== */
+.tae-notification {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    z-index: 10001;
+    animation: calcSlideUp 0.3s ease-out;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    max-width: 400px;
+}
+
+@keyframes calcSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==================== BOTÓN CAPTURA ==================== */
+#taeCapturaBtn {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#taeCapturaBtn:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+}
+
+#taeCapturaBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
