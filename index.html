@@ -56,6 +56,10 @@
                     <span class="sidebar-icon">🏦</span>
                     <span class="sidebar-label">Crédito</span>
                 </div>
+                <div class="sidebar-item" data-module="calculadora">
+                    <span class="sidebar-icon">🧮</span>
+                    <span class="sidebar-label">Calculadora</span>
+                </div>
                 <div class="sidebar-item" data-module="listasPrecios">
                     <span class="sidebar-icon">📋</span>
                     <span class="sidebar-label">Listas de Precios</span>
@@ -82,17 +86,14 @@
                     </div>
                 </div>
                 <div class="header-actions">
-                    <!-- Botón TAE Inventory -->
                     <button class="btn-header btn-tae" id="btnTaeInventory" title="Inventario TAE">
                         📱
                         <span id="badgeTae" class="badge-header">0</span>
                     </button>
-                    <!-- Botón Transferencias -->
                     <button class="btn-header" id="btnTransferencias" title="Transferencias Pendientes">
                         📦
                         <span id="badgeTransferencias" class="badge-header">0</span>
                     </button>
-                    <!-- Botón Cancelaciones -->
                     <button class="btn-header" id="btnCancelaciones" title="Solicitudes de Cancelación">
                         🗑️
                         <span id="badgeCancelaciones" class="badge-header">0</span>
@@ -107,22 +108,32 @@
                         <h2>🏠 Inicio</h2>
                     </div>
                     <div class="card-body">
-                        <div style="text-align: center; padding: 60px 20px;">
+                        <div style="text-align: center; padding: 40px 20px;">
                             <div style="font-size: 4rem; margin-bottom: 20px;">📊</div>
                             <h3 style="color: #1e293b; margin-bottom: 8px;">¡Bienvenido a SERVICEL - Grupo Casan!</h3>
                             <p style="color: #64748b; font-size: 1.1rem;">
-                                Selecciona un módulo en el menú lateral para comenzar
+                                Selecciona un módulo en el menú lateral o haz clic en los iconos
                             </p>
-                            <div style="display: flex; justify-content: center; gap: 16px; margin-top: 24px; flex-wrap: wrap;">
-                                <div style="background: #f8fafc; padding: 16px 24px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
-                                    <div style="font-size: 2rem;">📊</div>
-                                    <div style="font-weight: 600; color: #1e293b;">Contado</div>
-                                    <div style="font-size: 0.8rem; color: #64748b;">Ventas de contado</div>
+                            <div class="home-modules-grid">
+                                <div class="home-module-card" data-module="contado">
+                                    <div class="icon">📊</div>
+                                    <div class="title">Contado</div>
+                                    <div class="desc">Ventas de contado</div>
                                 </div>
-                                <div style="background: #f8fafc; padding: 16px 24px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
-                                    <div style="font-size: 2rem;">🏦</div>
-                                    <div style="font-weight: 600; color: #1e293b;">Crédito</div>
-                                    <div style="font-size: 0.8rem; color: #64748b;">Ventas a crédito</div>
+                                <div class="home-module-card" data-module="credito">
+                                    <div class="icon">🏦</div>
+                                    <div class="title">Crédito</div>
+                                    <div class="desc">Ventas a crédito</div>
+                                </div>
+                                <div class="home-module-card" data-module="calculadora">
+                                    <div class="icon">🧮</div>
+                                    <div class="title">Calculadora</div>
+                                    <div class="desc">Calcula tus puntos</div>
+                                </div>
+                                <div class="home-module-card" data-module="listasPrecios">
+                                    <div class="icon">📋</div>
+                                    <div class="title">Listas de Precios</div>
+                                    <div class="desc">Consultar precios</div>
                                 </div>
                             </div>
                         </div>
@@ -137,7 +148,6 @@
                         <h2>📊 Ventas de Contado</h2>
                     </div>
                     <div class="card-body">
-                        <!-- Selector de fecha -->
                         <div style="background: #f8fafc; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
                             <div>
                                 <label style="font-weight: 600; color: #1e3a8a; font-size: 0.85rem; display: block; margin-bottom: 4px;">📅 Fecha de inicio del período (14 días)</label>
@@ -151,9 +161,7 @@
                             </div>
                         </div>
 
-                        <!-- CONTENEDOR DE RESULTADOS (oculto inicialmente) -->
                         <div id="contadoResultsContainer" style="display: none;">
-                            <!-- Tarjetas de estadísticas -->
                             <div class="stats-grid" id="contadoStatsGrid">
                                 <div class="stat-card" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);">
                                     <div class="stat-number" id="contadoStatVentas">0</div>
@@ -173,7 +181,6 @@
                                 </div>
                             </div>
 
-                            <!-- Gráfica 1: Línea -->
                             <div style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; margin: 20px 0;">
                                 <h4 style="color: #1e40af; margin-bottom: 16px;">📈 Evolución de Ventas de Contado</h4>
                                 <div style="position: relative; height: 300px;">
@@ -181,7 +188,6 @@
                                 </div>
                             </div>
 
-                            <!-- Tarjetas SIM Express -->
                             <div style="margin-top: 20px;">
                                 <h4 style="color: #1e40af; margin-bottom: 12px;">📱 SIM Express - Ventas del período</h4>
                                 <div class="stats-grid" id="contadoSimExpressStatsGrid">
@@ -219,7 +225,6 @@
                                 </div>
                             </div>
 
-                            <!-- Gráfica SIM Express -->
                             <div id="contadoSimChartContainer" style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; margin: 20px 0;">
                                 <h4 style="color: #1e40af; margin-bottom: 16px;">📊 Distribución de SIM Express</h4>
                                 <div style="position: relative; height: 280px;">
@@ -227,7 +232,6 @@
                                 </div>
                             </div>
 
-                            <!-- Tarjetas de clasificación -->
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 20px 0;">
                                 <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); cursor: pointer;" id="contadoStatAccesorios" data-classification-type="accesorios">
                                     <div class="stat-number" id="contadoStatAccesorios">0</div>
@@ -243,7 +247,6 @@
                                 </div>
                             </div>
 
-                            <!-- Gráfica 2: Barras clasificación -->
                             <div style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
                                 <h4 style="color: #1e40af; margin-bottom: 16px;">📊 Ventas por Clasificación</h4>
                                 <div style="position: relative; height: 300px;">
@@ -252,7 +255,6 @@
                             </div>
                         </div>
 
-                        <!-- Mensaje de bienvenida (se muestra cuando no hay datos cargados) -->
                         <div id="contadoWelcomeMessage" class="welcome-message">
                             <h3>👋 ¡Bienvenido!</h3>
                             <p>Selecciona una fecha de inicio y presiona "Consultar" para ver los datos</p>
@@ -268,7 +270,6 @@
                         <h2>🏦 Ventas a Crédito</h2>
                     </div>
                     <div class="card-body">
-                        <!-- Selector de fecha -->
                         <div style="background: #f8fafc; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
                             <div>
                                 <label style="font-weight: 600; color: #1e3a8a; font-size: 0.85rem; display: block; margin-bottom: 4px;">📅 Fecha de inicio del período (14 días)</label>
@@ -282,22 +283,18 @@
                             </div>
                         </div>
 
-                        <!-- Loading -->
                         <div id="creditLoading" style="display: none; text-align: center; padding: 40px;">
                             <span class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></span>
                             <p style="margin-top: 12px; color: #64748b;">Consultando ventas a crédito...</p>
                         </div>
 
-                        <!-- Empty state -->
                         <div id="creditEmpty" style="display: none; text-align: center; padding: 40px; color: #94a3b8;">
                             <div style="font-size: 3rem; margin-bottom: 12px;">🏦</div>
                             <p>No se encontraron ventas a crédito en el período seleccionado</p>
                         </div>
 
-                        <!-- Estadísticas -->
                         <div id="creditStats" class="stats-grid" style="display: none;"></div>
 
-                        <!-- Gráfica -->
                         <div id="creditChartContainer" style="display: none; background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; margin: 20px 0;">
                             <h4 style="color: #1e40af; margin-bottom: 16px;">📊 Ventas por Plataforma de Crédito</h4>
                             <div style="position: relative; height: 280px;">
@@ -308,8 +305,134 @@
                             </div>
                         </div>
 
-                        <!-- Resultados (tabla) -->
                         <div id="creditResults" style="display: none; margin-top: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== MÓDULO: CALCULADORA DE VENTAS ==================== -->
+            <div id="calculadoraModule" class="module">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🧮 Calculadora de Ventas</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="calc-wrapper">
+                            <!-- Header del asesor -->
+                            <div class="calc-user-header">
+                                <div class="calc-user-info">
+                                    <div class="calc-user-avatar" id="calcAvatar">👤</div>
+                                    <div>
+                                        <div class="calc-user-name" id="calcAsesor">Cargando...</div>
+                                        <div class="calc-user-branch" id="calcSucursal">🏪 Cargando sucursal...</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grid de entrada de datos -->
+                            <div class="calc-grid">
+                                <!-- META -->
+                                <div class="calc-field calc-field-meta">
+                                    <label><span class="field-icon">🎯</span> META <span class="field-sub">(ingresa tu objetivo)</span></label>
+                                    <input type="number" id="calcMeta" min="0" value="20" placeholder="Ej: 20">
+                                </div>
+                                <!-- Credicel -->
+                                <div class="calc-field">
+                                    <label><span class="field-icon">🏦</span> Credicel</label>
+                                    <input type="number" id="calcCredicel" min="0" value="0" placeholder="0">
+                                </div>
+                                <!-- Payjoy -->
+                                <div class="calc-field">
+                                    <label><span class="field-icon">💳</span> Payjoy</label>
+                                    <input type="number" id="calcPayjoy" min="0" value="0" placeholder="0">
+                                </div>
+                                <!-- Spay -->
+                                <div class="calc-field">
+                                    <label><span class="field-icon">📱</span> Spay</label>
+                                    <input type="number" id="calcSpay" min="0" value="0" placeholder="0">
+                                </div>
+                                <!-- Paguitos -->
+                                <div class="calc-field">
+                                    <label><span class="field-icon">💵</span> Paguitos</label>
+                                    <input type="number" id="calcPaguitos" min="0" value="0" placeholder="0">
+                                </div>
+                                <!-- Teléfonos < $1,500 -->
+                                <div class="calc-field">
+                                    <label><span class="field-icon">📱</span> Teléfonos <span class="field-sub">&lt; $1,500</span></label>
+                                    <input type="number" id="calcMenor1500" min="0" value="0" placeholder="0">
+                                </div>
+                                <!-- Teléfonos ≥ $1,500 -->
+                                <div class="calc-field">
+                                    <label><span class="field-icon">📱</span> Teléfonos <span class="field-sub">≥ $1,500</span></label>
+                                    <input type="number" id="calcMayor1500" min="0" value="0" placeholder="0">
+                                </div>
+                                <!-- Líneas con equipo -->
+                                <div class="calc-field">
+                                    <label><span class="field-icon">📞</span> Líneas con equipo <span class="field-sub">(×4)</span></label>
+                                    <input type="number" id="calcLineasEquipo" min="0" value="0" placeholder="0">
+                                </div>
+                                <!-- Líneas sin equipo -->
+                                <div class="calc-field">
+                                    <label><span class="field-icon">📞</span> Líneas sin equipo <span class="field-sub">(×2)</span></label>
+                                    <input type="number" id="calcLineasSinEquipo" min="0" value="0" placeholder="0">
+                                </div>
+                                <!-- COCE -->
+                                <div class="calc-field">
+                                    <label><span class="field-icon">🔄</span> COCE <span class="field-sub">(×2)</span></label>
+                                    <input type="number" id="calcCoce" min="0" value="0" placeholder="0">
+                                </div>
+                            </div>
+
+                            <!-- Botones -->
+                            <div class="calc-actions">
+                                <button id="calcCalcularBtn" class="calc-btn calc-btn-primary">🧮 Calcular</button>
+                                <button id="calcLimpiarBtn" class="calc-btn calc-btn-secondary">🗑️ Limpiar</button>
+                            </div>
+
+                            <!-- Resultados -->
+                            <div id="calcResultados" style="display: none;" class="calc-results">
+                                <!-- SOLO 2 TARJETAS: Total Puntos y Faltan para Meta -->
+                                <div class="calc-stats" style="grid-template-columns: repeat(2, 1fr);">
+                                    <div class="calc-stat-card" style="background: linear-gradient(135deg, #1e40af, #3b82f6);">
+                                        <div class="calc-stat-number" id="calcPuntosTotales">0</div>
+                                        <div class="calc-stat-label">⭐ Puntos Totales</div>
+                                    </div>
+                                    <div class="calc-stat-card" id="calcMetaStatus" style="background: linear-gradient(135deg, #d97706, #f59e0b);">
+                                        <div class="calc-stat-number" id="calcFaltan">0</div>
+                                        <div class="calc-stat-label">🎯 Faltan para meta</div>
+                                    </div>
+                                </div>
+
+                                <!-- Barra de progreso -->
+                                <div class="calc-progress-wrapper">
+                                    <div class="calc-progress-header">
+                                        <span class="calc-progress-title">📈 Progreso hacia la meta</span>
+                                        <span class="calc-progress-percent" id="calcProgresoPorcentaje">0%</span>
+                                    </div>
+                                    <div class="calc-progress-bar">
+                                        <div class="calc-progress-fill" id="calcBarraProgreso" style="width: 0%;">0%</div>
+                                    </div>
+                                    <div class="calc-progress-labels">
+                                        <span>0%</span>
+                                        <span id="calcMetaLabel">Meta: 0 puntos</span>
+                                        <span>100%</span>
+                                    </div>
+                                </div>
+
+                                <!-- Desglose -->
+                                <div class="calc-breakdown">
+                                    <div class="calc-breakdown-title">📋 Desglose de Puntos</div>
+                                    <div id="calcDesglose"></div>
+                                </div>
+                            </div>
+
+                            <!-- Estado inicial -->
+                            <div id="calcEmpty" class="calc-empty">
+                                <div class="calc-empty-icon">🧮</div>
+                                <h3>Calculadora de Ventas</h3>
+                                <p>Ingresa tu <strong>META</strong> y tus ventas, luego presiona <strong>"Calcular"</strong></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -336,44 +459,29 @@
                         </a>
                     </div>
                     <div class="card-body">
-                        <!-- Pestañas -->
-                        <div id="listasTabsContainer" class="listas-tabs">
-                            <!-- Generado por JavaScript -->
-                        </div>
-                        
-                        <!-- Loading -->
+                        <div id="listasTabsContainer" class="listas-tabs"></div>
                         <div id="listasLoading" class="listas-loading" style="display: none;">
                             <span class="spinner"></span>
                             <p>Cargando imágenes...</p>
                         </div>
-                        
-                        <!-- Contenido -->
-                        <div id="listasContentContainer" class="listas-content">
-                            <!-- Generado por JavaScript -->
-                        </div>
+                        <div id="listasContentContainer" class="listas-content"></div>
                     </div>
                 </div>
-            </div>          
+            </div>
         </main>
     </div>
 
     <!-- ==================== SCRIPTS ==================== -->
-    <!-- Chart.js para gráficas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Configuración y autenticación -->
     <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
-    
-    <!-- Módulos -->
     <script src="js/contado.js"></script>
     <script src="js/credito.js"></script>
     <script src="js/transferencias.js"></script>
     <script src="js/cancelaciones.js"></script>
     <script src="js/listas-precios.js"></script>
     <script src="js/tae-modal.js"></script>
-    
-    <!-- Inicialización principal -->
+    <script src="js/calculadora.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

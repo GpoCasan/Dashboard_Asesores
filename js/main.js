@@ -93,7 +93,6 @@ async function handleLogin() {
     loginLoading.style.display = 'block';
     
     try {
-        // Limpiar cualquier dato de sesión anterior
         if (typeof clearAllSessionData === 'function') {
             clearAllSessionData();
         }
@@ -107,7 +106,6 @@ async function handleLogin() {
         showDashboard();
         updateUserInfo();
         
-        // ===== INICIALIZAR MÓDULOS =====
         if (typeof initContadoModule === 'function') {
             setTimeout(function() { initContadoModule(); }, 500);
         }
@@ -128,12 +126,18 @@ async function handleLogin() {
             setTimeout(function() { initListasPrecios(); }, 900);
         }
         
-        // ===== NUEVO: INICIALIZAR TAE MODAL =====
         if (typeof initTaeModal === 'function') {
             setTimeout(function() { initTaeModal(); }, 950);
         }
 
+        if (typeof initCalculadora === 'function') {
+            setTimeout(function() { initCalculadora(); }, 1000);
+        }
+
         switchModule('dashboard');
+        
+        // ===== ASIGNAR EVENTOS A LOS ICONOS DEL INICIO =====
+        setupHomeModuleCards();
         
         console.log('✅ Dashboard cargado correctamente');
         
@@ -182,39 +186,6 @@ function updateUserInfo() {
     }
 }
 
-// ==================== LOGOUT ====================
-
-function handleLogout() {
-    console.log('🚪 Cerrando sesión...');
-    
-    // Limpiar recursos TAE Modal
-    if (window.TaeModal && typeof window.TaeModal.close === 'function') {
-        window.TaeModal.close();
-    }
-    
-    if (typeof logout === 'function') {
-        logout(); // Esta función ya incluye la recarga
-    } else {
-        // Fallback
-        if (typeof clearAllSessionData === 'function') {
-            clearAllSessionData();
-        }
-        
-        loginOverlay.style.display = 'flex';
-        dashboard.style.display = 'none';
-        
-        loginEmail.value = '';
-        loginPassword.value = '';
-        loginError.style.display = 'none';
-        
-        if (typeof recargarPaginaForzada === 'function') {
-            recargarPaginaForzada();
-        } else {
-            window.location.reload(true);
-        }
-    }
-}
-
 // ==================== NAVEGACIÓN ENTRE MÓDULOS ====================
 
 function switchModule(moduleName) {
@@ -237,6 +208,61 @@ function switchModule(moduleName) {
     });
     
     console.log('📱 Módulo activado: ' + moduleName);
+}
+
+// ==================== LOGOUT ====================
+
+function handleLogout() {
+    console.log('🚪 Cerrando sesión...');
+    
+    if (window.TaeModal && typeof window.TaeModal.close === 'function') {
+        window.TaeModal.close();
+    }
+    
+    if (typeof logout === 'function') {
+        logout();
+    } else {
+        if (typeof clearAllSessionData === 'function') {
+            clearAllSessionData();
+        }
+        
+        loginOverlay.style.display = 'flex';
+        dashboard.style.display = 'none';
+        
+        loginEmail.value = '';
+        loginPassword.value = '';
+        loginError.style.display = 'none';
+        
+        if (typeof recargarPaginaForzada === 'function') {
+            recargarPaginaForzada();
+        } else {
+            window.location.reload(true);
+        }
+    }
+}
+
+// ==================== EVENTOS DE LOS ICONOS DEL INICIO ====================
+
+function setupHomeModuleCards() {
+    console.log('🏠 Configurando eventos de los iconos del inicio...');
+    
+    var cards = document.querySelectorAll('.home-module-card');
+    cards.forEach(function(card) {
+        // Remover listeners anteriores para evitar duplicados
+        var newCard = card.cloneNode(true);
+        card.parentNode.replaceChild(newCard, card);
+        
+        newCard.addEventListener('click', function(e) {
+            e.preventDefault();
+            var moduleName = this.dataset.module;
+            if (moduleName) {
+                switchModule(moduleName);
+                console.log('🏠 Navegando a: ' + moduleName);
+            }
+        });
+    });
+    
+    console.log('✅ Eventos de iconos del inicio configurados');
 }
 
 // ==================== EVENTOS ====================
@@ -284,7 +310,6 @@ function initializeApp() {
     setupSidebarNavigation();
     setupLogout();
     
-    // Configurar limpieza al cerrar la página
     window.addEventListener('beforeunload', function() {
         try {
             localStorage.removeItem('facturasProcessedData');
@@ -295,7 +320,6 @@ function initializeApp() {
         }
     });
     
-    // Verificar sesión almacenada
     if (hasStoredSession()) {
         console.log('🔍 Sesión encontrada en sessionStorage');
         var restored = restoreSession();
@@ -323,12 +347,19 @@ function initializeApp() {
                 setTimeout(function() { initListasPrecios(); }, 900);
             }
             
-            // ===== NUEVO: INICIALIZAR TAE MODAL =====
             if (typeof initTaeModal === 'function') {
                 setTimeout(function() { initTaeModal(); }, 950);
             }
 
+            if (typeof initCalculadora === 'function') {
+                setTimeout(function() { initCalculadora(); }, 1000);
+            }
+
             switchModule('dashboard');
+            
+            // ===== ASIGNAR EVENTOS A LOS ICONOS DEL INICIO =====
+            setupHomeModuleCards();
+            
             return;
         }
     }
@@ -344,6 +375,7 @@ window.getUserBranches = getUserBranches;
 window.getUserWarehouses = getUserWarehouses;
 window.switchModule = switchModule;
 window.handleLogout = handleLogout;
+window.setupHomeModuleCards = setupHomeModuleCards;
 
 // ==================== INICIALIZAR ====================
 
