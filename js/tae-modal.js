@@ -17,6 +17,8 @@ const TAE_ADMIN_TOKEN = '87924|XoV4ZRpYQ69rF89PiZnAqggd1VmO8WjtOU4pXWwC';
 
 let taeData = null;
 let taeUpdateInterval = null;
+let isUpdating = false;
+let taeCurrentTotal = 0;
 
 // ==================== FUNCIONES ====================
 
@@ -151,9 +153,18 @@ async function fetchTaeInventory() {
     }
 }
 
-function updateTaeBadge(count) {
+function updateTaeBadge(count, isLoading = false) {
     const badge = document.getElementById('badgeTae');
     if (!badge) return;
+    
+    taeCurrentTotal = count;
+    
+    if (isLoading) {
+        badge.textContent = '...';
+        badge.style.backgroundColor = '#f59e0b';
+        badge.style.color = 'white';
+        return;
+    }
     
     if (count > 0) {
         badge.textContent = formatCurrency(count);
@@ -168,26 +179,37 @@ function updateTaeBadge(count) {
     }
 }
 
-async function loadTaeInventory() {
-    console.log('📱 Cargando inventario TAE...');
+async function loadTaeInventory(showLogs = true) {
+    if (isUpdating) {
+        if (showLogs) console.log('📱 Ya hay una actualización en curso...');
+        return taeCurrentTotal;
+    }
+    
+    isUpdating = true;
+    if (showLogs) console.log('📱 Cargando inventario TAE...');
+    
+    // Mostrar loading en el badge
+    updateTaeBadge(0, true);
     
     try {
         const data = await fetchTaeInventory();
         if (data && data.data && data.data.length > 0) {
             const totalStock = parseInt(data.data[0].quantity) || 0;
             taeData = data;
-            updateTaeBadge(totalStock);
-            console.log(`📱 TAE actualizado: ${formatCurrency(totalStock)} unidades`);
+            updateTaeBadge(totalStock, false);
+            if (showLogs) console.log(`📱 TAE actualizado: ${formatCurrency(totalStock)} unidades`);
             return totalStock;
         } else {
-            console.warn('⚠️ No se recibieron datos de TAE');
-            updateTaeBadge(0);
+            if (showLogs) console.warn('⚠️ No se recibieron datos de TAE');
+            updateTaeBadge(0, false);
             return 0;
         }
     } catch (error) {
         console.error('❌ Error cargando TAE:', error);
-        updateTaeBadge(0);
+        updateTaeBadge(0, false);
         return 0;
+    } finally {
+        isUpdating = false;
     }
 }
 
@@ -246,156 +268,263 @@ function mostrarNotificacion(mensaje, tipo) {
 
 /**
  * ============================================================
- * FUNCIÓN DE CAPTURA MEJORADA CON COLORES
+ * FUNCIÓN DE CAPTURA - SIEMPRE ACTUALIZA ANTES DE CAPTURAR
  * ============================================================
  */
 async function tomarCapturaTAE() {
     console.log('📸 Tomando captura de pantalla...');
+    
+    // ===== PRIMERO: ACTUALIZAR EL INVENTARIO =====
+    console.log('📱 Actualizando inventario antes de capturar...');
+    const btnCaptura = document.getElementById('taeCapturaBtn');
+    if (btnCaptura) {
+        btnCaptura.textContent = '⏳ Actualizando...';
+        btnCaptura.disabled = true;
+    }
+    
+    // Actualizar datos
+    await loadTaeInventory(true);
+    
+    // Actualizar el modal con los datos nuevos
+    renderTaeModal(taeData);
+    
+    // Pequeña pausa para que el DOM se actualice
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    if (btnCaptura) {
+        btnCaptura.textContent = '📸 Capturando...';
+    }
     
     if (typeof html2canvas === 'undefined') {
         await cargarHtml2Canvas();
     }
     
     try {
-        const modalContent = document.querySelector('#taeModal .modal-content');
-        if (!modalContent) {
-            mostrarNotificacion('No se encontró el contenido del modal', 'error');
+        // Obtener el modal completo
+        const modal = document.getElementById('taeModal');
+        if (!modal) {
+            mostrarNotificacion('No se encontró el modal', 'error');
+            if (btnCaptura) {
+                btnCaptura.textContent = '📸 Capturar';
+                btnCaptura.disabled = false;
+            }
             return;
         }
         
-        const btnCaptura = document.getElementById('taeCapturaBtn');
-        if (btnCaptura) {
-            btnCaptura.textContent = '⏳ Capturando...';
-            btnCaptura.disabled = true;
+        // Obtener el contenido del modal
+        const modalContent = modal.querySelector('.modal-content');
+        if (!modalContent) {
+            mostrarNotificacion('No se encontró el contenido del modal', 'error');
+            if (btnCaptura) {
+                btnCaptura.textContent = '📸 Capturar';
+                btnCaptura.disabled = false;
+            }
+            return;
         }
         
         const nombreAsesor = getCurrentUserName();
-        const fechaHora = formatDateTime(new Date());
         
-        // Crear contenedor temporal
-        const tempContainer = document.createElement('div');
-        tempContainer.style.cssText = `
-            position: fixed;
-            left: -9999px;
-            top: 0;
-            width: ${modalContent.scrollWidth}px;
-            background: white;
-            z-index: -1;
-            opacity: 0;
-            pointer-events: none;
-        `;
-        document.body.appendChild(tempContainer);
+        // ===== CAPTURAR DIRECTAMENTE EL MODAL VISIBLE =====
+        // Primero, asegurar que el modal esté visible y en su posición
+        modal.style.display = 'flex';
+        modal.style.opacity = '1';
+        modal.style.visibility = 'visible';
         
-        // Clonar contenido
-        const clone = modalContent.cloneNode(true);
-        clone.style.width = modalContent.scrollWidth + 'px';
-        clone.style.maxWidth = 'none';
-        clone.style.margin = '0';
-        clone.style.borderRadius = '12px';
-        clone.style.boxShadow = '0 20px 60px rgba(0,0,0,0.15)';
-        clone.style.position = 'relative';
-        clone.style.overflow = 'visible';
-        clone.style.background = 'white';
+        // Forzar que el modal esté en la posición correcta para la captura
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100%';
+        modal.style.height = '100%';
+        modal.style.zIndex = '10000';
+        modal.style.backgroundColor = 'rgba(0,0,0,0.01)';
         
-        // Mantener el header con colores originales
-        const header = clone.querySelector('.modal-header');
-        if (header) {
-            header.style.background = 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)';
-            header.style.color = 'white';
-            header.style.borderRadius = '12px 12px 0 0';
-            header.style.padding = '20px 24px';
-        }
+        // Asegurar que el contenido esté centrado
+        modalContent.style.position = 'relative';
+        modalContent.style.margin = 'auto';
+        modalContent.style.top = '50%';
+        modalContent.style.transform = 'translateY(-50%)';
         
-        // Remover botón cerrar
-        const closeBtn = clone.querySelector('.close-modal');
-        if (closeBtn) closeBtn.style.display = 'none';
-        
-        // Mejorar el body
-        const body = clone.querySelector('.modal-body');
-        if (body) {
-            body.style.padding = '30px 24px';
-            body.style.background = 'white';
-        }
-        
-        // Mejorar el footer
-        const footer = clone.querySelector('.modal-footer');
-        if (footer) {
-            footer.innerHTML = '';
-            footer.style.padding = '12px 24px';
-            footer.style.borderTop = '2px solid #e2e8f0';
-            footer.style.background = '#f8fafc';
-            footer.style.textAlign = 'center';
-            footer.style.fontSize = '0.75rem';
-            footer.style.fontWeight = '600';
-            footer.style.color = '#8b5cf6';
-            footer.style.borderRadius = '0 0 12px 12px';
-            footer.textContent = 'SERVICEL - Grupo Casan © 2026';
-        }
-        
-        // ===== BARRA DE INFORMACIÓN DEL ASESOR CON COLORES =====
-        const infoDiv = document.createElement('div');
-        infoDiv.style.cssText = `
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
-            border-top: 3px solid #8b5cf6;
-            font-size: 0.9rem;
-            color: #1e293b;
-            font-family: 'Segoe UI', sans-serif;
-        `;
-        infoDiv.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="
-                    background: #8b5cf6;
-                    color: white;
-                    padding: 4px 12px;
-                    border-radius: 20px;
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                ">👤 ASESOR</span>
-                <span style="font-weight: 700; color: #4c1d95;">${nombreAsesor}</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px; color: #64748b;">
-                <span style="
-                    background: #e2e8f0;
-                    color: #475569;
-                    padding: 4px 12px;
-                    border-radius: 20px;
-                    font-size: 0.75rem;
-                    font-weight: 600;
-                ">📅 ${fechaHora}</span>
-            </div>
-        `;
-        clone.appendChild(infoDiv);
-        
-        tempContainer.appendChild(clone);
-        
+        // Pequeña pausa para que los estilos se apliquen
         await new Promise(resolve => setTimeout(resolve, 200));
         
-        const canvas = await html2canvas(clone, {
-            scale: 2,
+        // Capturar con html2canvas - capturar SOLO el contenido del modal
+        const canvas = await html2canvas(modalContent, {
+            scale: 2.5,
             useCORS: true,
             allowTaint: true,
             backgroundColor: '#ffffff',
             logging: false,
-            width: clone.scrollWidth,
-            height: clone.scrollHeight,
+            width: modalContent.scrollWidth,
+            height: modalContent.scrollHeight,
             onclone: function(doc) {
-                // Asegurar que el header mantenga el gradiente
+                // HEADER: letras blancas totalmente
                 const headerEl = doc.querySelector('.modal-header');
                 if (headerEl) {
                     headerEl.style.background = 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)';
+                    headerEl.style.color = 'white';
+                    // Forzar que todos los textos del header sean blancos
+                    const headerTexts = headerEl.querySelectorAll('*');
+                    headerTexts.forEach(el => {
+                        el.style.color = 'white !important';
+                    });
+                    // Forzar el h3
+                    const h3 = headerEl.querySelector('h3');
+                    if (h3) {
+                        h3.style.color = 'white';
+                        h3.style.setProperty('color', 'white', 'important');
+                    }
+                    // Forzar el span
+                    const spans = headerEl.querySelectorAll('span');
+                    spans.forEach(span => {
+                        span.style.color = 'white';
+                        span.style.setProperty('color', 'white', 'important');
+                    });
+                }
+                
+                // NÚMERO: solo letras moradas, sin fondo
+                const numEl = doc.querySelector('.modal-body div div:first-child');
+                if (numEl) {
+                    // Quitar cualquier fondo
+                    numEl.style.background = 'none';
+                    numEl.style.webkitBackgroundClip = 'unset';
+                    numEl.style.webkitTextFillColor = '#7c3aed';
+                    numEl.style.backgroundClip = 'unset';
+                    numEl.style.color = '#7c3aed';
+                    numEl.style.fontSize = '5rem';
+                    numEl.style.fontWeight = '800';
+                    numEl.style.lineHeight = '1.1';
+                    numEl.style.marginBottom = '2px';
+                }
+                
+                // Asegurar que el footer no se muestre (los botones)
+                const footerEl = doc.querySelector('.modal-footer');
+                if (footerEl) {
+                    footerEl.style.display = 'none';
                 }
             }
         });
         
-        tempContainer.remove();
+        // Restaurar estilos originales del modal
+        modal.style.position = '';
+        modal.style.top = '';
+        modal.style.left = '';
+        modal.style.width = '';
+        modal.style.height = '';
+        modal.style.zIndex = '';
+        modal.style.backgroundColor = '';
+        modalContent.style.position = '';
+        modalContent.style.margin = '';
+        modalContent.style.top = '';
+        modalContent.style.transform = '';
         
+        // Crear un nuevo canvas para agregar la barra de asesor y el footer
+        const finalCanvas = document.createElement('canvas');
+        const ctx = finalCanvas.getContext('2d');
+        
+        // Configurar dimensiones
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const footerHeight = 90; // Aumentado para el nombre más grande
+        const totalHeight = imgHeight + footerHeight;
+        
+        finalCanvas.width = imgWidth;
+        finalCanvas.height = totalHeight;
+        
+        // Dibujar la captura del modal
+        ctx.drawImage(canvas, 0, 0);
+        
+        // ===== AGREGAR BARRA DE ASESOR EN LA PARTE INFERIOR =====
+        const fechaHora = formatDateTime(new Date());
+        
+        // Fondo de la barra (gradiente)
+        const gradient = ctx.createLinearGradient(0, imgHeight, 0, totalHeight);
+        gradient.addColorStop(0, '#f5f3ff');
+        gradient.addColorStop(1, '#ede9fe');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, imgHeight, imgWidth, footerHeight);
+        
+        // Línea superior morada
+        ctx.fillStyle = '#8b5cf6';
+        ctx.fillRect(0, imgHeight, imgWidth, 3);
+        
+        // Configurar texto
+        ctx.textBaseline = 'middle';
+        
+        // ===== INFORMACIÓN DEL ASESOR (IZQUIERDA) - NOMBRE MÁS GRANDE =====
+        ctx.textAlign = 'left';
+        
+        // Badge ASESOR
+        const badgeX = 24;
+        const badgeY = imgHeight + footerHeight / 2;
+        const badgeWidth = 80;
+        const badgeHeight = 32;
+        const radius = 20;
+        
+        ctx.beginPath();
+        ctx.moveTo(badgeX + radius, badgeY - badgeHeight/2);
+        ctx.lineTo(badgeX + badgeWidth - radius, badgeY - badgeHeight/2);
+        ctx.quadraticCurveTo(badgeX + badgeWidth, badgeY - badgeHeight/2, badgeX + badgeWidth, badgeY);
+        ctx.quadraticCurveTo(badgeX + badgeWidth, badgeY + badgeHeight/2, badgeX + badgeWidth - radius, badgeY + badgeHeight/2);
+        ctx.lineTo(badgeX + radius, badgeY + badgeHeight/2);
+        ctx.quadraticCurveTo(badgeX, badgeY + badgeHeight/2, badgeX, badgeY);
+        ctx.quadraticCurveTo(badgeX, badgeY - badgeHeight/2, badgeX + radius, badgeY - badgeHeight/2);
+        ctx.closePath();
+        ctx.fillStyle = '#8b5cf6';
+        ctx.fill();
+        
+        // Texto del badge
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 12px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('👤 ASESOR', badgeX + badgeWidth/2, badgeY + 1);
+        
+        // ===== NOMBRE DEL ASESOR - MÁS GRANDE =====
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#4c1d95';
+        ctx.font = 'bold 18px "Segoe UI", sans-serif'; // Tamaño aumentado de 14 a 18
+        ctx.fillText(nombreAsesor, badgeX + badgeWidth + 16, badgeY + 1);
+        
+        // ===== FECHA (DERECHA) =====
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#475569';
+        ctx.font = '600 12px "Segoe UI", sans-serif';
+        
+        // Badge de fecha
+        const dateBadgeX = imgWidth - 24;
+        const dateBadgeY = imgHeight + footerHeight / 2;
+        const dateBadgeWidth = 180;
+        const dateBadgeHeight = 32;
+        
+        ctx.beginPath();
+        ctx.moveTo(dateBadgeX - dateBadgeWidth + radius, dateBadgeY - dateBadgeHeight/2);
+        ctx.lineTo(dateBadgeX - radius, dateBadgeY - dateBadgeHeight/2);
+        ctx.quadraticCurveTo(dateBadgeX, dateBadgeY - dateBadgeHeight/2, dateBadgeX, dateBadgeY);
+        ctx.quadraticCurveTo(dateBadgeX, dateBadgeY + dateBadgeHeight/2, dateBadgeX - radius, dateBadgeY + dateBadgeHeight/2);
+        ctx.lineTo(dateBadgeX - dateBadgeWidth + radius, dateBadgeY + dateBadgeHeight/2);
+        ctx.quadraticCurveTo(dateBadgeX - dateBadgeWidth, dateBadgeY + dateBadgeHeight/2, dateBadgeX - dateBadgeWidth, dateBadgeY);
+        ctx.quadraticCurveTo(dateBadgeX - dateBadgeWidth, dateBadgeY - dateBadgeHeight/2, dateBadgeX - dateBadgeWidth + radius, dateBadgeY - dateBadgeHeight/2);
+        ctx.closePath();
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fill();
+        
+        // Texto de la fecha
+        ctx.fillStyle = '#475569';
+        ctx.font = '600 12px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`📅 ${fechaHora}`, dateBadgeX - dateBadgeWidth/2, dateBadgeY + 1);
+        
+        // ===== AGREGAR FOOTER =====
+        const footerY = imgHeight + footerHeight;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#8b5cf6';
+        ctx.font = 'bold 12px "Segoe UI", sans-serif';
+        ctx.fillText('SERVICEL - Grupo Casan © 2026', imgWidth/2, footerY + 28);
+        
+        // Descargar imagen
         const link = document.createElement('a');
         link.download = `TAE_${nombreAsesor.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.png`;
-        link.href = canvas.toDataURL('image/png', 1.0);
+        link.href = finalCanvas.toDataURL('image/png', 1.0);
         link.click();
         
         if (btnCaptura) {
@@ -407,7 +536,7 @@ async function tomarCapturaTAE() {
         
     } catch (error) {
         console.error('❌ Error:', error);
-        mostrarNotificacion('❌ Error al capturar', 'error');
+        mostrarNotificacion('❌ Error al capturar: ' + error.message, 'error');
         
         const btnCaptura = document.getElementById('taeCapturaBtn');
         if (btnCaptura) {
@@ -429,7 +558,7 @@ function renderTaeLoading() {
     body.innerHTML = `
         <div style="display: flex; justify-content: center; align-items: center; padding: 30px 0;">
             <div style="width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #8b5cf6; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-            <span style="margin-left: 16px; color: #64748b; font-weight: 500;">Cargando...</span>
+            <span style="margin-left: 16px; color: #64748b; font-weight: 500;">Actualizando...</span>
         </div>
     `;
 }
@@ -490,23 +619,42 @@ function renderTaeModal(data) {
                     ${warehouseName}
                 </span>
             </div>
+            
+            <!-- Fecha de actualización -->
+            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 12px;">
+                Actualizado: ${fechaActual}
+            </div>
         </div>
     `;
 }
 
+/**
+ * ============================================================
+ * ABRIR MODAL - SIEMPRE ACTUALIZA ANTES DE ABRIR
+ * ============================================================
+ */
 async function openTaeModal() {
+    console.log('📱 Abriendo modal TAE - Actualizando inventario...');
+    
+    // ===== PRIMERO: ACTUALIZAR EL INVENTARIO =====
+    // Mostrar loading en el badge
+    updateTaeBadge(0, true);
+    
+    // Cargar datos actualizados
+    await loadTaeInventory(true);
+    
+    // Restaurar color del badge
+    if (taeCurrentTotal > 0) {
+        updateTaeBadge(taeCurrentTotal, false);
+    } else {
+        updateTaeBadge(0, false);
+    }
+    
     let modal = document.getElementById('taeModal');
     if (modal) {
         modal.classList.add('active');
-        if (!taeData) {
-            await loadTaeInventory();
-        }
         renderTaeModal(taeData);
         return;
-    }
-    
-    if (!taeData) {
-        await loadTaeInventory();
     }
     
     modal = document.createElement('div');
@@ -587,8 +735,12 @@ async function openTaeModal() {
     document.getElementById('taeCloseBtn').addEventListener('click', closeTaeModal);
     document.getElementById('taeRefreshBtn').addEventListener('click', async function() {
         renderTaeLoading();
-        await loadTaeInventory();
+        await loadTaeInventory(true);
         renderTaeModal(taeData);
+        // Actualizar badge
+        if (taeCurrentTotal > 0) {
+            updateTaeBadge(taeCurrentTotal, false);
+        }
     });
     document.getElementById('taeCapturaBtn').addEventListener('click', tomarCapturaTAE);
     
@@ -632,14 +784,14 @@ function initTaeModal() {
     }
     
     setTimeout(async function() {
-        await loadTaeInventory();
+        await loadTaeInventory(true);
         
         if (taeUpdateInterval) {
             clearInterval(taeUpdateInterval);
         }
         taeUpdateInterval = setInterval(async function() {
             console.log('📱 Actualizando TAE automáticamente...');
-            await loadTaeInventory();
+            await loadTaeInventory(false);
         }, 60000);
     }, 1500);
     
@@ -651,6 +803,7 @@ function cleanupTaeModal() {
         clearInterval(taeUpdateInterval);
         taeUpdateInterval = null;
     }
+    isUpdating = false;
     console.log('🧹 TAE Modal limpiado');
 }
 
@@ -662,7 +815,8 @@ window.TaeModal = {
     fetch: fetchTaeInventory,
     load: loadTaeInventory,
     cleanup: cleanupTaeModal,
-    capturar: tomarCapturaTAE
+    capturar: tomarCapturaTAE,
+    getTotal: function() { return taeCurrentTotal; }
 };
 
 console.log('📱 === TAE MODAL LISTO ===');
