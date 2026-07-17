@@ -792,7 +792,7 @@ function initTaeModal() {
         taeUpdateInterval = setInterval(async function() {
             console.log('📱 Actualizando TAE automáticamente...');
             await loadTaeInventory(false);
-        }, 60000);
+        }, 300000);
     }, 1500);
     
     console.log('✅ TAE Modal inicializado');

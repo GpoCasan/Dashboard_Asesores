@@ -1846,3 +1846,103 @@ body {
     opacity: 0.6;
     cursor: not-allowed;
 }
+/* Estilos para campos automáticos */
+.calc-field input[readonly] {
+    background-color: #f1f5f9 !important;
+    cursor: not-allowed !important;
+    color: #1e293b;
+}
+
+.calc-field input[readonly]:focus {
+    outline: none;
+    border-color: #e2e8f0;
+}
+
+/* Selector de mes */
+#calcMonthSelector:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Botón consultar */
+#calcConsultarBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Estado de carga */
+#calcAutoLoading {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+/* ===== CAMPOS AUTOMÁTICOS ===== */
+.calc-field-auto {
+    position: relative;
+}
+
+.calc-field-auto label .field-sub {
+    color: #16a34a;
+    font-weight: 600;
+    background: #dcfce7;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 0.65rem;
+}
+
+.calc-field-auto input[readonly] {
+    background-color: #f0fdf4 !important;
+    border-color: #86efac !important;
+    color: #166534 !important;
+    font-weight: 600;
+    cursor: not-allowed !important;
+}
+
+.calc-field-auto input[readonly]:focus {
+    outline: none;
+    border-color: #86efac !important;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+
+.calc-field-auto::after {
+    content: "🔄 Auto";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.6rem;
+    color: #16a34a;
+    background: #dcfce7;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+/* Ajustar padding del input para que no se solape con el badge */
+.calc-field-auto input[readonly] {
+    padding-right: 70px !important;
+}
+
+/* ===== DIVISOR ===== */
+.calc-divider {
+    grid-column: 1 / -1 !important;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .calc-field-auto::after {
+        font-size: 0.5rem;
+        padding: 1px 6px;
+        right: 8px;
+    }
+    .calc-field-auto input[readonly] {
+        padding-right: 60px !important;
+    }
+}

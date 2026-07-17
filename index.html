@@ -329,57 +329,109 @@
                                 </div>
                             </div>
 
+                            <!-- Selector de mes y botón consultar -->
+                            <div class="calc-auto-query" style="
+                                background: #f0f7ff;
+                                border-radius: 12px;
+                                padding: 16px 20px;
+                                margin-bottom: 20px;
+                                border: 1px solid #bfdbfe;
+                                display: flex;
+                                align-items: center;
+                                gap: 16px;
+                                flex-wrap: wrap;
+                            ">
+                                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                    <label style="font-weight: 600; color: #1e3a8a; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                                        <span>📅</span> Mes:
+                                    </label>
+                                    <select id="calcMonthSelector" style="
+                                        padding: 8px 14px;
+                                        border: 2px solid #bfdbfe;
+                                        border-radius: 8px;
+                                        font-size: 0.9rem;
+                                        background: white;
+                                        color: #1e293b;
+                                        font-weight: 500;
+                                        min-width: 180px;
+                                        cursor: pointer;
+                                    ">
+                                    </select>
+                                    <button id="calcConsultarBtn" style="
+                                        padding: 8px 20px;
+                                        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+                                        color: white;
+                                        border: none;
+                                        border-radius: 8px;
+                                        cursor: pointer;
+                                        font-weight: 600;
+                                        font-size: 0.9rem;
+                                        transition: all 0.3s;
+                                        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                    " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                                        <span id="calcAutoLoading" style="display: none;">⏳</span>
+                                        📊 Consultar
+                                    </button>
+                                </div>
+                                <div style="flex: 1; font-size: 0.85rem; color: #64748b; min-width: 200px;">
+                                    <span id="calcAutoStatus">📅 Selecciona un mes y presiona "Consultar"</span>
+                                </div>
+                            </div>
+
                             <!-- Grid de entrada de datos -->
                             <div class="calc-grid">
-                                <!-- META -->
+                                <!-- ========== META ========== -->
                                 <div class="calc-field calc-field-meta">
                                     <label><span class="field-icon">🎯</span> META <span class="field-sub">(ingresa tu objetivo)</span></label>
                                     <input type="number" id="calcMeta" min="0" value="20" placeholder="Ej: 20">
                                 </div>
-                                <!-- Credicel -->
-                                <div class="calc-field">
-                                    <label><span class="field-icon">🏦</span> Credicel</label>
-                                    <input type="number" id="calcCredicel" min="0" value="0" placeholder="0">
+
+                                <!-- ========== CAMPOS AUTOMÁTICOS ========== -->
+                                <div class="calc-field calc-field-auto">
+                                    <label><span class="field-icon">🏦</span> Credicel <span class="field-sub">(automático)</span></label>
+                                    <input type="number" id="calcCredicel" min="0" value="0" placeholder="0" readonly>
                                 </div>
-                                <!-- Payjoy -->
-                                <div class="calc-field">
-                                    <label><span class="field-icon">💳</span> Payjoy</label>
-                                    <input type="number" id="calcPayjoy" min="0" value="0" placeholder="0">
+                                <div class="calc-field calc-field-auto">
+                                    <label><span class="field-icon">💳</span> Payjoy <span class="field-sub">(automático)</span></label>
+                                    <input type="number" id="calcPayjoy" min="0" value="0" placeholder="0" readonly>
                                 </div>
-                                <!-- Spay -->
-                                <div class="calc-field">
-                                    <label><span class="field-icon">📱</span> Spay</label>
-                                    <input type="number" id="calcSpay" min="0" value="0" placeholder="0">
+                                <div class="calc-field calc-field-auto">
+                                    <label><span class="field-icon">📱</span> Spay <span class="field-sub">(automático)</span></label>
+                                    <input type="number" id="calcSpay" min="0" value="0" placeholder="0" readonly>
                                 </div>
-                                <!-- Paguitos -->
-                                <div class="calc-field">
-                                    <label><span class="field-icon">💵</span> Paguitos</label>
-                                    <input type="number" id="calcPaguitos" min="0" value="0" placeholder="0">
+                                <div class="calc-field calc-field-auto">
+                                    <label><span class="field-icon">💵</span> Paguitos <span class="field-sub">(automático)</span></label>
+                                    <input type="number" id="calcPaguitos" min="0" value="0" placeholder="0" readonly>
                                 </div>
-                                <!-- Teléfonos < $1,500 -->
-                                <div class="calc-field">
-                                    <label><span class="field-icon">📱</span> Teléfonos <span class="field-sub">&lt; $1,500</span></label>
-                                    <input type="number" id="calcMenor1500" min="0" value="0" placeholder="0">
+                                <div class="calc-field calc-field-auto">
+                                    <label><span class="field-icon">🔄</span> COCE <span class="field-sub">(automático)</span></label>
+                                    <input type="number" id="calcCoce" min="0" value="0" placeholder="0" readonly>
                                 </div>
-                                <!-- Teléfonos ≥ $1,500 -->
-                                <div class="calc-field">
-                                    <label><span class="field-icon">📱</span> Teléfonos <span class="field-sub">≥ $1,500</span></label>
-                                    <input type="number" id="calcMayor1500" min="0" value="0" placeholder="0">
+                                <div class="calc-field calc-field-auto">
+                                    <label><span class="field-icon">📱</span> Teléfonos <span class="field-sub">&lt; $1,500 (automático)</span></label>
+                                    <input type="number" id="calcMenor1500" min="0" value="0" placeholder="0" readonly>
                                 </div>
-                                <!-- Líneas con equipo -->
+                                <div class="calc-field calc-field-auto">
+                                    <label><span class="field-icon">📱</span> Teléfonos <span class="field-sub">≥ $1,500 (automático)</span></label>
+                                    <input type="number" id="calcMayor1500" min="0" value="0" placeholder="0" readonly>
+                                </div>
+
+                                <!-- ========== SEPARADOR ========== -->
+                                <div class="calc-divider" style="grid-column: 1 / -1; border-top: 2px dashed #e2e8f0; margin: 8px 0 4px 0; padding: 0; position: relative;">
+                                    <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: white; padding: 0 12px; color: #94a3b8; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">⬇️ Datos manuales ⬇️</span>
+                                </div>
+
+                                <!-- ========== CAMPOS MANUALES ========== -->
                                 <div class="calc-field">
                                     <label><span class="field-icon">📞</span> Líneas con equipo <span class="field-sub">(×4)</span></label>
                                     <input type="number" id="calcLineasEquipo" min="0" value="0" placeholder="0">
                                 </div>
-                                <!-- Líneas sin equipo -->
                                 <div class="calc-field">
                                     <label><span class="field-icon">📞</span> Líneas sin equipo <span class="field-sub">(×2)</span></label>
                                     <input type="number" id="calcLineasSinEquipo" min="0" value="0" placeholder="0">
-                                </div>
-                                <!-- COCE -->
-                                <div class="calc-field">
-                                    <label><span class="field-icon">🔄</span> COCE <span class="field-sub">(×2)</span></label>
-                                    <input type="number" id="calcCoce" min="0" value="0" placeholder="0">
                                 </div>
                             </div>
 
